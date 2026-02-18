@@ -1,40 +1,86 @@
-import { useState, useCallback } from 'react';
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, type OnNodesChange, type OnEdgesChange, type OnConnect, type Edge, type Node } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
- 
-const initialNodes = [
-  { id: 'n1', position: { x: 0, y: 0 }, data: { label: 'Node 1' } },
-  { id: 'n2', position: { x: 0, y: 100 }, data: { label: 'Node 2' } },
-];
-const initialEdges = [{ id: 'n1-n2', source: 'n1', target: 'n2' }];
- 
+import AddBlockPanel from '@/studio/components/AddBlockPanel'
+import ContextMenu from '@/studio/ContextMenu'
+import { NODE_TYPES } from '@/studio/node-types'
+import { useStudio } from '@/studio/useStudio'
+import Box from '@mui/material/Box'
+import {
+  Background,
+  BackgroundVariant,
+  Controls,
+  Panel,
+  ReactFlow,
+  type DefaultEdgeOptions,
+  type FitViewOptions,
+  type NodeMouseHandler,
+  type OnNodeDrag,
+} from '@xyflow/react'
+import '@xyflow/react/dist/style.css'
+import { useCallback, useState } from 'react'
+import ConnectionCard from './robot/components/ConnectionCard'
+
+type MenuType = {
+  nodeId: string
+  anchorEl: HTMLElement | null
+}
+
+const fitViewOptions: FitViewOptions = {
+  padding: 0.2,
+}
+
+const defaultEdgeOptions: DefaultEdgeOptions = {
+  animated: true,
+}
+
+const onNodeDrag: OnNodeDrag = (_, node) => {
+  console.log('drag event', node.data)
+}
+
 export default function App() {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
- 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    [],
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
-  );
-  const onConnect: OnConnect = useCallback(
-    (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [],
-  );
- 
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onAdd } = useStudio()
+  const [menu, setMenu] = useState<MenuType | null>(null)
+  const onNodeContextMenu: NodeMouseHandler = useCallback(
+    (event, node) => {
+      // Prevent native context menu from showing
+      event.preventDefault()
+      setMenu({
+        nodeId: node.id,
+        anchorEl: event.currentTarget as HTMLElement,
+      })
+    },
+    [setMenu]
+  )
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <Box
+      sx={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeDrag={onNodeDrag}
+        nodeTypes={NODE_TYPES}
         fitView
-      />
-    </div>
-  );
+        onNodeContextMenu={onNodeContextMenu}
+        fitViewOptions={fitViewOptions}
+        defaultEdgeOptions={defaultEdgeOptions}
+      >
+        <Background variant={BackgroundVariant.Dots} />
+        <Controls />
+        <Panel position='top-left'>
+          <ConnectionCard />
+        </Panel>
+        <Panel position='center-right'>
+          <AddBlockPanel onAdd={onAdd} />
+        </Panel>
+        {menu && <ContextMenu id={menu.nodeId} anchorEl={menu.anchorEl} onClose={() => setMenu(null)} />}
+      </ReactFlow>
+    </Box>
+  )
 }
