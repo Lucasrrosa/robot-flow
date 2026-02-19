@@ -20,13 +20,19 @@ type StatusMessage = {
 export type CommandMessage = StopMessage | CalibrateMessage | SpeedRangeMessage | MoveMessage | StatusMessage
 
 export type RobotStatus = {
-  type: 'status'
-  ip?: string
-  left?: number
-  right?: number
-  leftStopUs?: number
-  rightStopUs?: number
-  speedRangeUs?: number
+  type: string
+  ip: string
+  left: number
+  right: number
+  distanceCm: number
+  mpuOk: boolean
+  accX: number
+  accY: number
+  accZ: number
+  gyroX: number
+  gyroY: number
+  gyroZ: number
+  tempC: number
 }
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting'
@@ -40,10 +46,9 @@ export type RobotStore = {
 }
 
 export type RobotValue =
-  | 'velocityLeft'
-  | 'velocityRight'
+  | 'left'
+  | 'right'
   | 'distanceCm'
-  | 'mpuOk'
   | 'accX'
   | 'accY'
   | 'accZ'

@@ -1,7 +1,9 @@
+import RobotStatusPanel from '@/robot/components/RobotStatusPanel'
+import ExecutionPanel from '@/runtime/components/ExecutionPanel'
 import AddBlockPanel from '@/studio/components/AddBlockPanel'
 import ContextMenu from '@/studio/ContextMenu'
 import { NODE_TYPES } from '@/studio/node-types'
-import { useStudio } from '@/studio/useStudio'
+import { useStudioStore } from '@/studio/useStudioStore'
 import Box from '@mui/material/Box'
 import {
   Background,
@@ -9,10 +11,10 @@ import {
   Controls,
   Panel,
   ReactFlow,
+  ReactFlowProvider,
   type DefaultEdgeOptions,
   type FitViewOptions,
   type NodeMouseHandler,
-  type OnNodeDrag,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useCallback, useState } from 'react'
@@ -31,12 +33,8 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
   animated: true,
 }
 
-const onNodeDrag: OnNodeDrag = (_, node) => {
-  console.log('drag event', node.data)
-}
-
 export default function App() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onAdd } = useStudio()
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStudioStore()
   const [menu, setMenu] = useState<MenuType | null>(null)
   const onNodeContextMenu: NodeMouseHandler = useCallback(
     (event, node) => {
@@ -58,29 +56,36 @@ export default function App() {
         flexDirection: 'column',
       }}
     >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onNodeDrag={onNodeDrag}
-        nodeTypes={NODE_TYPES}
-        fitView
-        onNodeContextMenu={onNodeContextMenu}
-        fitViewOptions={fitViewOptions}
-        defaultEdgeOptions={defaultEdgeOptions}
-      >
-        <Background variant={BackgroundVariant.Dots} />
-        <Controls />
-        <Panel position='top-left'>
-          <ConnectionCard />
-        </Panel>
-        <Panel position='center-right'>
-          <AddBlockPanel onAdd={onAdd} />
-        </Panel>
-        {menu && <ContextMenu id={menu.nodeId} anchorEl={menu.anchorEl} onClose={() => setMenu(null)} />}
-      </ReactFlow>
+      <ReactFlowProvider>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={NODE_TYPES}
+          fitView
+          onNodeContextMenu={onNodeContextMenu}
+          fitViewOptions={fitViewOptions}
+          defaultEdgeOptions={defaultEdgeOptions}
+        >
+          <Background variant={BackgroundVariant.Dots} />
+          <Controls />
+          <Panel position='top-left'>
+            <ConnectionCard />
+          </Panel>
+          <Panel position='center-left'>
+            <AddBlockPanel />
+          </Panel>
+          <Panel position='bottom-right'>
+            <RobotStatusPanel />
+          </Panel>
+          <Panel position='top-right'>
+            <ExecutionPanel />
+          </Panel>
+          {menu && <ContextMenu id={menu.nodeId} anchorEl={menu.anchorEl} onClose={() => setMenu(null)} />}
+        </ReactFlow>
+      </ReactFlowProvider>
     </Box>
   )
 }
