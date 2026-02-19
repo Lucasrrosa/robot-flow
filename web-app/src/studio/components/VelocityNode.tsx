@@ -1,5 +1,6 @@
 import NodeBasePaper from '@/studio/components/parts/NodeBasePaper'
 import type { SetVelocityBlockType } from '@/studio/types/BlockTypes'
+import { useStudioStore } from '@/studio/useStudioStore'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
@@ -9,7 +10,8 @@ type VelocityNode = Node<SetVelocityBlockType, 'setVelocity'>
 
 export function VelocityNode({ data, id }: NodeProps<VelocityNode>) {
   const { updateNodeData } = useReactFlow()
-  const isActive = data.runtimeActive
+  const activeNodeId = useStudioStore((store) => store.actualNodeId)
+  const isActive = activeNodeId === id
 
   const updateValue = (side: 'left' | 'right', value: number) => {
     const clampedValue = Math.max(-100, Math.min(value, 100))

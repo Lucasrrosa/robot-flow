@@ -1,5 +1,6 @@
 import NodeBasePaper from '@/studio/components/parts/NodeBasePaper'
 import type { DelayBlockType } from '@/studio/types/BlockTypes'
+import { useStudioStore } from '@/studio/useStudioStore'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
@@ -8,7 +9,8 @@ import { Handle, Position, useReactFlow, type Node, type NodeProps } from '@xyfl
 type DelayNode = Node<DelayBlockType, 'delay'>
 
 export function DelayNode({ data, id }: NodeProps<DelayNode>) {
-  const isActive = data.runtimeActive
+  const activeNodeId = useStudioStore(store => store.actualNodeId)
+  const isActive = activeNodeId === id
   const { updateNodeData } = useReactFlow()
   return (
     <NodeBasePaper isActive={isActive}>

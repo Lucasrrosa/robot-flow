@@ -1,9 +1,13 @@
 import FormTextField from '@/components/FormTextField'
+import { useRobotConnection } from '@/robot/contexts/useRobotConnection'
 import { useRobotStore } from '@/robot/robotStore'
 import { zodResolver } from '@hookform/resolvers/zod'
+import SettingsRemoteIcon from '@mui/icons-material/SettingsRemote'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
 import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
 
@@ -18,13 +22,16 @@ const ipValidationSchema = z.object({
 type IpValidation = z.infer<typeof ipValidationSchema>
 
 export default function ConnectionForm({ onSubmit }: Props) {
+  const { ipAddress } = useRobotConnection()
   const {
     control,
     handleSubmit,
     formState: { isValid },
   } = useForm<IpValidation>({
     resolver: zodResolver(ipValidationSchema),
+    defaultValues: { ip: ipAddress || '' },
   })
+
   const robotConnectionStatus = useRobotStore((store) => store.robotConnectionStatus)
   return (
     <Stack direction='row' spacing={1}>
@@ -42,16 +49,16 @@ export default function ConnectionForm({ onSubmit }: Props) {
           },
         }}
       />
-      <Button
-        size='small'
-        loading={robotConnectionStatus === 'connecting'}
-        disabled={!isValid}
-        onClick={handleSubmit(({ ip }) => onSubmit(ip))}
-        variant='text'
-        color='primary'
-      >
-        {robotConnectionStatus === 'connecting' ? 'Conectando...' : 'Conectar'}
-      </Button>
+      <Tooltip title={'Conectar'}>
+        <IconButton
+          loading={robotConnectionStatus === 'connecting'}
+          disabled={!isValid}
+          onClick={handleSubmit(({ ip }) => onSubmit(ip))}
+          color='primary'
+        >
+          <SettingsRemoteIcon color='primary' />
+        </IconButton>
+      </Tooltip>
     </Stack>
   )
 }

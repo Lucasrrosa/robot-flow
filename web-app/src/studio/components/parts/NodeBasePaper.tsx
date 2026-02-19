@@ -8,7 +8,7 @@ type Props = {
 export default function NodeBasePaper({ isActive, children }: PropsWithChildren<Props>) {
   return (
     <Paper
-      sx={{ p: 1, borderColor: isActive ? 'primary.main' : undefined, bgcolor: isActive ? 'primary.light' : undefined }}
+      sx={{ p: 1, borderColor: isActive ? 'primary.main' : undefined,borderWidth: isActive ? 2 : undefined }}
     >
       {children}
     </Paper>
