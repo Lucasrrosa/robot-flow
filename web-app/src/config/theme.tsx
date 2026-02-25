@@ -2,11 +2,11 @@ import { createTheme } from '@mui/material/styles'
 
 export const appTheme = createTheme({
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
-      dark: '#046c89', //(Escuro)
-      main: '#1c7b9b', //(Médio)
-      light: '#62a4c0', //(Claro)
+      dark: '#06b1e0', //(Escuro)
+      main: '#28adda', //(Médio)
+      light: '#4592b3', //(Claro)
     },
     secondary: {
       dark: '#381396', // (Escuro)
@@ -19,17 +19,27 @@ export const appTheme = createTheme({
       defaultProps: {
         variant: 'outlined',
       },
+      styleOverrides: {
+        root: { borderRadius: 16 },
+      },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 4,
+          borderRadius: 6,
         },
       },
     },
     MuiTextField: {
       defaultProps: {
         size: 'small',
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 6,
+        },
       },
     },
   },

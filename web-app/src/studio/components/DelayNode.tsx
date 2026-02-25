@@ -9,7 +9,7 @@ import { Handle, Position, useReactFlow, type Node, type NodeProps } from '@xyfl
 type DelayNode = Node<DelayBlockType, 'delay'>
 
 export function DelayNode({ data, id }: NodeProps<DelayNode>) {
-  const activeNodeId = useStudioStore(store => store.actualNodeId)
+  const activeNodeId = useStudioStore((store) => store.actualNodeId)
   const isActive = activeNodeId === id
   const { updateNodeData } = useReactFlow()
   return (
@@ -28,8 +28,8 @@ export function DelayNode({ data, id }: NodeProps<DelayNode>) {
           onChange={(e) => updateNodeData(id, { ammountMs: Number(e.target.value) })}
         />
       </Stack>
-      <Handle type='target' position={Position.Left} />
-      <Handle type='source' position={Position.Right} />
+      <Handle type='target' position={Position.Top} />
+      <Handle type='source' position={Position.Bottom} />
     </NodeBasePaper>
   )
 }

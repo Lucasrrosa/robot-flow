@@ -66,6 +66,7 @@ export default function App() {
           nodeTypes={NODE_TYPES}
           fitView
           onNodeContextMenu={onNodeContextMenu}
+          colorMode={'dark'}
           fitViewOptions={fitViewOptions}
           defaultEdgeOptions={defaultEdgeOptions}
         >

@@ -22,16 +22,22 @@ export type CommandMessage = StopMessage | CalibrateMessage | SpeedRangeMessage 
 export type RobotStatus = {
   type: string
   ip: string
+  leftStopUs: number
+  rightStopUs: number
+  speedRangeUs: number
   left: number
   right: number
   distanceCm: number
-  mpuOk: boolean
+  mpuOk: number
   accX: number
   accY: number
   accZ: number
   gyroX: number
   gyroY: number
   gyroZ: number
+  angleX: number
+  angleY: number
+  angleZ: number
   tempC: number
 }
 
@@ -45,7 +51,7 @@ export type RobotStore = {
   setLastStatus: (st: RobotStatus) => void
 }
 
-export type RobotValue =
+export type RobotValues =
   | 'left'
   | 'right'
   | 'distanceCm'
@@ -55,4 +61,7 @@ export type RobotValue =
   | 'gyroX'
   | 'gyroY'
   | 'gyroZ'
+  | 'angleX'
+  | 'angleY'
+  | 'angleZ'
   | 'tempC'

@@ -14,7 +14,7 @@ export function StopNode({ id }: NodeProps<StopNode>) {
     <NodeBasePaper isActive={isActive}>
       <StopCircleIcon />
       <Typography variant='body1'>Fim</Typography>
-      <Handle type='target' position={Position.Left} />
+      <Handle type='target' position={Position.Top} />
     </NodeBasePaper>
   )
 }

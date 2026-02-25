@@ -25,6 +25,7 @@ export const useExecutor = () => {
   const nextStep = useCallback(
     (sourceHandle?: string) => {
       let candidates = edges.filter((e) => e.source === actualNodeId)
+      console.log('Executing next step:', actualNodeId, 'Source handle: ', sourceHandle)
       if (sourceHandle) candidates = candidates.filter((e) => e.sourceHandle === sourceHandle)
       setActualNodeId(candidates[0]?.target ?? null)
     },
@@ -42,7 +43,7 @@ export const useExecutor = () => {
   const stopProgram = useCallback(() => {
     setIsRunning(false)
     setActualNodeId(null)
-    sendMessage({type: 'stop'})
+    sendMessage({ type: 'stop' })
   }, [setIsRunning, setActualNodeId, sendMessage])
 
   const BLOCKS_EXECUTOR: BlockExecutorType = useMemo(
@@ -55,7 +56,8 @@ export const useExecutor = () => {
       if: (block) => {
         if (!status) throw new Error('Nenhuma informação do Robô')
         const isConditionMet = calculateCondition(status, block)
-        nextStep(isConditionMet ? 'true' : 'false')
+        console.log('Condition met:', isConditionMet)
+        nextStep(isConditionMet ? 'then' : 'else')
       },
       setVelocity: (block) => {
         console.log('Setting velocity with', block.left, 'left and', block.right, 'right')
@@ -80,8 +82,7 @@ export const useExecutor = () => {
 
   const executeBlock = useCallback(
     async (node: AppNode) => {
-      if (!isRunning)
-        return
+      if (!isRunning) return
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await BLOCKS_EXECUTOR[node.type as BlockTypes](node.data as any)
     },

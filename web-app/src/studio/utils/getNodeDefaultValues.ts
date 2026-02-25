@@ -11,6 +11,6 @@ export const getNodeDefaultValues = (type: BlockTypes): Block => {
     case 'stop':
       return { type: 'stop', runtimeActive: false }
     case 'if':
-      return { type: 'if', condition: 'equals', robotValue: 'distanceCm', conditionValue: '0', runtimeActive: false }
+      return { type: 'if', condition: 'equals', robotValue: 'distanceCm', conditionValue: 0, runtimeActive: false }
   }
 }

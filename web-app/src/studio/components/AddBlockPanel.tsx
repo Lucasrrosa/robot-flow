@@ -19,7 +19,7 @@ export default function AddBlockPanel() {
         <Button variant='outlined' onClick={() => addNode('stop')}>
           Fim
         </Button>
-        {/*<Button variant='outlined' onClick={() => addNode('if')}>Condição</Button>*/}
+        <Button variant='outlined' onClick={() => addNode('if')}>Condição</Button>
         <Button variant='outlined' onClick={() => addNode('delay')}>
           Delay
         </Button>

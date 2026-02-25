@@ -17,5 +17,6 @@ const applyCondition = (robotValue: number, value: number, condition: IfBlockTyp
 }
 export const calculateCondition = (status: RobotStatus, conditionBlock: IfBlockType): boolean => {
   const robotValue = status[conditionBlock.robotValue]
+  console.log('Calculating condition with robot value:', robotValue, conditionBlock.condition, conditionBlock, conditionBlock)
   return applyCondition(robotValue, conditionBlock.conditionValue, conditionBlock.condition)
 }

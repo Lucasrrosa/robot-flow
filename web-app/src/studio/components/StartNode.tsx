@@ -14,7 +14,7 @@ export function StartNode({ id }: NodeProps<StartNode>) {
     <NodeBasePaper isActive={isActive}>
       <PlayCircleFilledIcon />
       <Typography variant='body1'>Início</Typography>
-      <Handle type='source' position={Position.Right} />
+      <Handle type='source' position={Position.Bottom} />
     </NodeBasePaper>
   )
 }

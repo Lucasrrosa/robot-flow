@@ -1,4 +1,3 @@
-import type { RobotValue } from '@/robot/types/types'
 
 export type StartBlockType = {
   type: 'start'
@@ -23,11 +22,13 @@ export type DelayBlockType = {
   runtimeActive: boolean
 }
 
+export type ConditionOperations = 'equals' | 'notEquals' | 'greaterThan' | 'lessThan'
+
 export type IfBlockType = {
   type: 'if'
-  condition: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan'
+  condition: ConditionOperations
   conditionValue: number
-  robotValue: RobotValue
+  robotValue: RobotValues
   runtimeActive: boolean
 }
 

@@ -1,8 +1,9 @@
+import NumberField from '@/components/NumberField'
 import NodeBasePaper from '@/studio/components/parts/NodeBasePaper'
 import type { SetVelocityBlockType } from '@/studio/types/BlockTypes'
 import { useStudioStore } from '@/studio/useStudioStore'
+import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { Handle, Position, useReactFlow, type Node, type NodeProps } from '@xyflow/react'
 
@@ -19,31 +20,32 @@ export function VelocityNode({ data, id }: NodeProps<VelocityNode>) {
   }
   return (
     <NodeBasePaper isActive={isActive}>
+      <Handle type='target' position={Position.Top} />
       <Stack spacing={1} alignItems='center'>
         <Typography fontWeight={500} variant='body1'>
           Velocidade
         </Typography>
         <Stack direction='row' spacing={2}>
-          <TextField
-            sx={{ width: 100 }}
-            label='Esquerda'
-            variant='outlined'
-            value={`${data.left}`}
-            type='number'
-            onChange={(e) => updateValue('left', Number(e.target.value))}
-          />
-          <TextField
-            sx={{ width: 100 }}
-            label='Direita'
-            variant='outlined'
-            value={`${data.right}`}
-            type='number'
-            onChange={(e) => updateValue('right', Number(e.target.value))}
-          />
+          <Box sx={{ width: 100 }}>
+            <NumberField
+              size='small'
+              value={data.left}
+              onValueChange={(value) => updateValue('left', Number(value))}
+              label='Esquerda'
+            />
+          </Box>
+          <Box sx={{ width: 100 }}>
+            <NumberField
+              size='small'
+              value={data.right}
+              onValueChange={(value) => updateValue('right', Number(value))}
+              label='Direita'
+            />
+          </Box>
         </Stack>
       </Stack>
-      <Handle type='target' position={Position.Left} />
-      <Handle type='source' position={Position.Right} />
+
+      <Handle type='source' position={Position.Bottom} />
     </NodeBasePaper>
   )
 }
