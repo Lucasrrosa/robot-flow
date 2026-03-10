@@ -15,14 +15,9 @@ export default function RobotStatusPanel() {
         <Typography variant='body1' color={connectionStatus ==='connected' ? 'success' : 'textDisabled'}>Robô {connectionLabels[connectionStatus]}</Typography>
         <Typography variant='caption'>Distância</Typography>
         <Typography variant='body1'>{status?.distanceCm.toFixed(2) || '-'} cm</Typography>
-        <Typography variant='caption'>Motores</Typography>
+        <Typography variant='caption'>Velocidade</Typography>
         <Typography variant='body1'>
-          L: {status?.left}R: {status?.right}{' '}
-        </Typography>
-        <Typography variant='caption'>MPU</Typography>
-        <Typography variant='caption'>Angulos</Typography>
-        <Typography variant='body1'>
-          X: {status?.angleX.toFixed(2) || '-'}° Y: {status?.angleY.toFixed(2) || '-'}° Z: {status?.angleZ.toFixed(2) || '-'}°
+          {status?.speed}
         </Typography>
       </Stack>
     </Paper>

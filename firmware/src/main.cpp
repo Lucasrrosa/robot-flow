@@ -2,11 +2,9 @@
 #include <WiFi.h>
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
-#include <ESP32Servo.h>
-#include <Wire.h>
-#include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
-#include <MPU6050_tockn.h>
+
+#include "motion/Motion.h"
+
 
 // =======================================================
 // WIFI
@@ -14,114 +12,24 @@
 const char *WIFI_SSID = "LinkSpeed_Bifrost";
 const char *WIFI_PASS = "Luna@016";
 
-// =======================================================
-// PINOS (AJUSTE AQUI)
-// =======================================================
-// Servos
-static const int PIN_SERVO_LEFT = 4;
-static const int PIN_SERVO_RIGHT = 5;
 
 // Ultrassônico
 static const int PIN_US_TRIG = 2;
 static const int PIN_US_ECHO = 3;
 
 // =======================================================
-// SERVO CONFIG
-// =======================================================
-Servo servoLeft;
-Servo servoRight;
-
-int leftStopUs = 1500;
-int rightStopUs = 1500;
-
-int speedRangeUs = 250;
-
-// Inversão (por causa do espelhamento)
-bool invertLeft = false;
-bool invertRight = true;
-
-// Estado atual
-float currentLeft = 0.0f;
-float currentRight = 0.0f;
-
-// =======================================================
-// FAILSAFE
-// =======================================================
-unsigned long lastCmdMs = 0;
-unsigned long CMD_TIMEOUT_MS = 700;
-
-// =======================================================
 // WEBSOCKET
 // =======================================================
 WebSocketsServer ws(81);
 
-
-// =======================================================
-// MPU6050
-// =======================================================
-
-
-MPU6050 mpu6050(Wire);
-
-bool mpuOk = false;
+// Busy flag
+bool isBusy = false;
 
 // =======================================================
 // ULTRASSÔNICO
 // =======================================================
 float distanceCm = -1;
 unsigned long lastUsRead = 0;
-
-// =======================================================
-// UTILS
-// =======================================================
-int clampInt(int v, int mn, int mx)
-{
-  if (v < mn)
-    return mn;
-  if (v > mx)
-    return mx;
-  return v;
-}
-
-float clampFloat(float v, float mn, float mx)
-{
-  if (v < mn)
-    return mn;
-  if (v > mx)
-    return mx;
-  return v;
-}
-
-int speedToUs(float speed, int stopUs)
-{
-  speed = clampFloat(speed, -1.0f, 1.0f);
-  return stopUs + (int)(speed * speedRangeUs);
-}
-
-void applyMotors(float left, float right)
-{
-  currentLeft = clampFloat(left, -1.0f, 1.0f);
-  currentRight = clampFloat(right, -1.0f, 1.0f);
-
-  float l = currentLeft;
-  float r = currentRight;
-
-  if (invertLeft)
-    l = -l;
-  if (invertRight)
-    r = -r;
-
-  int leftUs = speedToUs(l, leftStopUs);
-  int rightUs = speedToUs(r, rightStopUs);
-
-  servoLeft.writeMicroseconds(leftUs);
-  servoRight.writeMicroseconds(rightUs);
-}
-
-void stopMotors()
-{
-  applyMotors(0, 0);
-}
 
 // =======================================================
 // ULTRASSÔNICO
@@ -153,78 +61,45 @@ float readUltrasonicCm()
   return cm;
 }
 
+
+// =======================================================
+// MOTION
+// =======================================================
+Motion motion;
+
 // =======================================================
 // STATUS
 // =======================================================
-void sendStatus(uint8_t clientNum)
-{
+
+String buildStatus() {
   StaticJsonDocument<1024> doc;
 
   doc["type"] = "status";
   doc["ip"] = WiFi.localIP().toString();
-  // motores
-  doc["left"] = currentLeft;
-  doc["right"] = currentRight;
-  // calibração
-  doc["leftStopUs"] = leftStopUs;
-  doc["rightStopUs"] = rightStopUs;
-  doc["speedRangeUs"] = speedRangeUs;
+ 
   // sensores
   doc["distanceCm"] = distanceCm;
-  // MPU
-  doc["mpuOk"] = mpuOk;
-  doc["accX"] = mpu6050.getAccX();
-  doc["accY"] = mpu6050.getAccY();
-  doc["accZ"] = mpu6050.getAccZ();
 
-  doc["gyroX"] = mpu6050.getGyroX();
-  doc["gyroY"] = mpu6050.getGyroY();
-  doc["gyroZ"] = mpu6050.getGyroZ();
 
-  doc["angleX"] = mpu6050.getAngleX();
-  doc["angleY"] = mpu6050.getAngleY();
-  doc["angleZ"] = mpu6050.getAngleZ();
-
-  doc["tempC"] = mpu6050.getTemp();
+  doc["isBusy"] = isBusy;
+  // Info
+  doc["speed"] = motion.getVelocity();
 
   String msg;
   serializeJson(doc, msg);
+  return msg;
+}
+
+void sendStatus(uint8_t clientNum)
+{
+  String msg = buildStatus();
   ws.sendTXT(clientNum, msg);
 }
 
 void broadcastStatus()
 {
-  StaticJsonDocument<1024> doc;
 
-  doc["type"] = "status";
-  doc["ip"] = WiFi.localIP().toString();
-  // motores
-  doc["left"] = currentLeft;
-  doc["right"] = currentRight;
-  // calibração
-  doc["leftStopUs"] = leftStopUs;
-  doc["rightStopUs"] = rightStopUs;
-  doc["speedRangeUs"] = speedRangeUs;
-  // sensores
-  doc["distanceCm"] = distanceCm;
-  // MPU
-  doc["mpuOk"] = mpuOk;
-  doc["accX"] = mpu6050.getAccX();
-  doc["accY"] = mpu6050.getAccY();
-  doc["accZ"] = mpu6050.getAccZ();
-
-  doc["gyroX"] = mpu6050.getGyroX();
-  doc["gyroY"] = mpu6050.getGyroY();
-  doc["gyroZ"] = mpu6050.getGyroZ();
-
-  doc["angleX"] = mpu6050.getAngleX();
-  doc["angleY"] = mpu6050.getAngleY();
-  doc["angleZ"] = mpu6050.getAngleZ();
-
-  doc["tempC"] = mpu6050.getTemp();
-
-  String msg;
-  serializeJson(doc, msg);
+  String msg = buildStatus();
   ws.broadcastTXT(msg);
 }
 
@@ -235,55 +110,69 @@ void handleMessage(uint8_t clientNum, const String &payload)
 {
   StaticJsonDocument<512> doc;
   DeserializationError err = deserializeJson(doc, payload);
-
   if (err)
     return;
-
   const char *type = doc["type"] | "";
-
   // MOVE
   if (strcmp(type, "move") == 0)
   {
-    float left = doc["left"] | 0.0f;
-    float right = doc["right"] | 0.0f;
+    int timeMs = doc["timeMs"] | 0;
+    bool dir = doc["dir"] | false;
+    isBusy = true;
+    motion.move(timeMs, dir);
+    isBusy = false;
+    return;
+  }
 
-    applyMotors(left, right);
-    lastCmdMs = millis();
+  // TURN
+  if (strcmp(type, "turn") == 0)
+  {
+    float angle = doc["angle"] | 0;
+    isBusy = true;
+    motion.turn(angle);
+    isBusy = false;
     return;
   }
 
   // STOP
   if (strcmp(type, "stop") == 0)
   {
-    stopMotors();
-    lastCmdMs = millis();
+    isBusy = true;
+    motion.stop();
+    isBusy = false;
     return;
   }
-
+  
   // CALIBRAÇÃO
   if (strcmp(type, "calibrate") == 0)
   {
-    if (doc["leftStopUs"].is<int>())
+    isBusy = true;
+    if (doc["leftStopUs"].is<int>() && doc["rightStopUs"].is<int>())
     {
-      leftStopUs = clampInt(doc["leftStopUs"].as<int>(), 1300, 1700);
+      motion.calibrateStopMotors(doc["leftStopUs"].as<int>(), doc["rightStopUs"].as<int>());
     }
-    if (doc["rightStopUs"].is<int>())
-    {
-      rightStopUs = clampInt(doc["rightStopUs"].as<int>(), 1300, 1700);
-    }
+    isBusy = false;
     sendStatus(clientNum);
+
     return;
   }
 
   // SPEED RANGE
-  if (strcmp(type, "speedRange") == 0)
+  if (strcmp(type, "setSpeed") == 0)
   {
     int v = doc["value"] | 250;
-    speedRangeUs = clampInt(v, 50, 450);
+    isBusy = true;
+    motion.setVelocity(v);
     sendStatus(clientNum);
+    isBusy = false;
     return;
   }
 
+  if(strcmp(type, "customMove") == 0) {
+      int l =  constrain(doc["left"] | 0, -100, 100);
+      int r = constrain(doc["right"] | 0, -100, 100);
+      motion.customMove(l,r);
+  }
   // STATUS
   if (strcmp(type, "status") == 0)
   {
@@ -298,14 +187,13 @@ void onWsEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   {
   case WStype_CONNECTED:
   {
-    lastCmdMs = millis();
     sendStatus(num);
     break;
   }
 
   case WStype_DISCONNECTED:
   {
-    stopMotors();
+    motion.stop();
     break;
   }
 
@@ -342,20 +230,6 @@ void connectWifi()
 }
 
 // =======================================================
-// MPU
-// =======================================================
-void setupMpu()
-{
-
-  delay(100);
-  mpu6050.begin();
-  mpu6050.calcGyroOffsets(true);
-  mpuOk = true;
-
-  Serial.println("MPU6050 OK!");
-}
-
-// =======================================================
 // LOOP DE LEITURA DE SENSORES
 // =======================================================
 void updateSensors()
@@ -366,12 +240,6 @@ void updateSensors()
     lastUsRead = millis();
     distanceCm = readUltrasonicCm();
   }
-
-  // MPU: a cada loop (é rápido)
-  if (mpuOk)
-  {
-    mpu6050.update();
-  }
 }
 
 // =======================================================
@@ -380,13 +248,7 @@ void updateSensors()
 void setup()
 {
   Serial.begin(115200);
-
-/* Setup do MPU - new */
-  Wire.begin();
-
-  
-
-  setupMpu();
+  motion.begin();
   delay(800);
 
   // Ultrassônico
@@ -396,14 +258,7 @@ void setup()
 
   connectWifi();
 
-  // Servos
-  servoLeft.setPeriodHertz(50);
-  servoRight.setPeriodHertz(50);
-
-  servoLeft.attach(PIN_SERVO_LEFT, 500, 2500);
-  servoRight.attach(PIN_SERVO_RIGHT, 500, 2500);
-
-  stopMotors();
+  motion.stop();
 
   // WebSocket
   ws.begin();
@@ -422,14 +277,9 @@ void loop()
 
   updateSensors();
 
-  // // Fail-safe
-  // if (millis() - lastCmdMs > CMD_TIMEOUT_MS) {
-  //   stopMotors();
-  // }
-
   // Telemetria: 5x por segundo
   static unsigned long lastStatus = 0;
-  if (millis() - lastStatus > 100)
+  if (millis() - lastStatus > 200)
   {
     lastStatus = millis();
     broadcastStatus();

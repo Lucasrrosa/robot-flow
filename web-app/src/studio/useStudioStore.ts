@@ -1,3 +1,4 @@
+import { DEFAULT_EDGES, DEFAULT_NODES } from '@/studio/default_program'
 import type { BlockTypes } from '@/studio/types/BlockTypes'
 import { getNodeDefaultValues } from '@/studio/utils/getNodeDefaultValues'
 import { getNodeId } from '@/studio/utils/getNodeId'
@@ -30,8 +31,8 @@ export type AppState = {
   setActualNodeId: (nodeId: string | null) => void
 }
 export const useStudioStore = create<AppState>((set, get) => ({
-  nodes: [],
-  edges: [],
+  nodes: DEFAULT_NODES,
+  edges: DEFAULT_EDGES,
   onNodesChange: (changes) => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),

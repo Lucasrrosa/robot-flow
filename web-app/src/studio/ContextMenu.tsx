@@ -30,7 +30,7 @@ export default function ContextMenu({ id, anchorEl, onClose }: Props) {
 
   const deleteNode = useCallback(() => {
     setNodes((nodes) => nodes.filter((node) => node.id !== id))
-    setEdges((edges) => edges.filter((edge) => edge.source !== id))
+    setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id))
     onClose()
   }, [id, setNodes, setEdges, onClose])
 

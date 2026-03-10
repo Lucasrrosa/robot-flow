@@ -21,6 +21,7 @@ export const useExecutor = () => {
   const setIsRunning = useStudioStore((store) => store.setIsRunning)
   const setActualNodeId = useStudioStore((store) => store.setActualNodeId)
   const actualNodeId = useStudioStore((store) => store.actualNodeId)
+  const isBusy = useRobotStore((store) => store.lastStatus?.isBusy)
 
   const nextStep = useCallback(
     (sourceHandle?: string) => {
@@ -59,12 +60,37 @@ export const useExecutor = () => {
         console.log('Condition met:', isConditionMet)
         nextStep(isConditionMet ? 'then' : 'else')
       },
-      setVelocity: (block) => {
-        console.log('Setting velocity with', block.left, 'left and', block.right, 'right')
+      setSpeed: (block) => {
+        console.log('Setting velocity with', block.value)
+        sendMessage({
+          type: 'setSpeed',
+          value: block.value,
+        })
+        nextStep()
+      },
+      move: (block) => {
+        console.log('Executing move with', block)
         sendMessage({
           type: 'move',
-          left: block.left / 100,
-          right: block.right / 100,
+          timeMs: block.timeMs,
+          dir: block.direction === 'backward' ? true : false,
+        })
+        nextStep()
+      },
+      turn: (block) => {
+        console.log('Executing turn with', block)
+        sendMessage({
+          type: 'turn',
+          angle: block.angle,
+        })
+        nextStep()
+      },
+      customMove: (block) => {
+        console.log('Executing custom move with', block)
+        sendMessage({
+          type: 'customMove',
+          left: block.left,
+          right: block.right,
         })
         nextStep()
       },
@@ -90,11 +116,15 @@ export const useExecutor = () => {
   )
 
   useEffect(() => {
+    if (isBusy) return
     if (actualNodeId === null) return
     const node = getNodeById(nodes, actualNodeId)
-    if (!node) throw new Error('Node not found')
+    if (!node) {
+      console.log('Node not found', actualNodeId)
+      throw new Error('Node not found')
+    }
     executeBlock(node)
-  }, [actualNodeId, executeBlock, nodes])
+  }, [actualNodeId, executeBlock, nodes, isBusy])
 
   return { startProgram, stopProgram }
 }

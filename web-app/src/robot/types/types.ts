@@ -1,44 +1,26 @@
-type MoveMessage = { type: 'move'; left: number; right: number }
+type MoveCommand = { timeMs: number; type: 'move'; dir: boolean }
+type TurnCommand = { angle: number; type: 'turn' }
+type CustomMoveCommand = { left: number; right: number; type: 'customMove' }
+type StopCommand = { type: 'stop' }
+type CalibrateCommand = { type: 'calibrate'; leftStopUs: number; rightStopUs: number }
+type StatusCommand = { type: 'status' }
+type SetSpeedCommand = { type: 'setSpeed'; value: number }
 
-type StopMessage = { type: 'stop' }
-
-type CalibrateMessage = {
-  type: 'calibrate'
-  leftStopUs: number
-  rightStopUs: number
-}
-
-type SpeedRangeMessage = {
-  type: 'speedRange'
-  value: number
-}
-
-type StatusMessage = {
-  type: 'status'
-}
-
-export type CommandMessage = StopMessage | CalibrateMessage | SpeedRangeMessage | MoveMessage | StatusMessage
+export type CommandMessage =
+  | MoveCommand
+  | TurnCommand
+  | CustomMoveCommand
+  | StopCommand
+  | CalibrateCommand
+  | SetSpeedCommand
+  | StatusCommand
 
 export type RobotStatus = {
   type: string
   ip: string
-  leftStopUs: number
-  rightStopUs: number
-  speedRangeUs: number
-  left: number
-  right: number
   distanceCm: number
-  mpuOk: number
-  accX: number
-  accY: number
-  accZ: number
-  gyroX: number
-  gyroY: number
-  gyroZ: number
-  angleX: number
-  angleY: number
-  angleZ: number
-  tempC: number
+  speed: number
+  isBusy: boolean
 }
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting'
@@ -51,17 +33,6 @@ export type RobotStore = {
   setLastStatus: (st: RobotStatus) => void
 }
 
-export type RobotValues =
-  | 'left'
-  | 'right'
-  | 'distanceCm'
-  | 'accX'
-  | 'accY'
-  | 'accZ'
-  | 'gyroX'
-  | 'gyroY'
-  | 'gyroZ'
-  | 'angleX'
-  | 'angleY'
-  | 'angleZ'
-  | 'tempC'
+export type RobotValues = keyof RobotStatus
+
+export type RobotSensorValues = 'distanceCm' | 'speed'

@@ -23,8 +23,17 @@ export default function AddBlockPanel() {
         <Button variant='outlined' onClick={() => addNode('delay')}>
           Delay
         </Button>
-        <Button variant='outlined' onClick={() => addNode('setVelocity')}>
-          Velocidade
+        <Button variant='outlined' onClick={() => addNode('setSpeed')}>
+          Definir Velocidade
+        </Button>
+        <Button variant='outlined' onClick={() => addNode('move')}>
+          Mover
+        </Button>
+        <Button variant='outlined' onClick={() => addNode('turn')}>
+          Girar
+        </Button>
+        <Button variant='outlined' onClick={() => addNode('customMove')}>
+          Mover custom
         </Button>
       </Stack>
     </Paper>
