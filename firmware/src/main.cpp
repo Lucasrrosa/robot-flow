@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 
 #include "motion/Motion.h"
+#include "display/display.h"
 
 
 // =======================================================
@@ -14,8 +15,8 @@ const char *WIFI_PASS = "Luna@016";
 
 
 // Ultrassônico
-static const int PIN_US_TRIG = 2;
-static const int PIN_US_ECHO = 3;
+static const int PIN_US_TRIG = 3;
+static const int PIN_US_ECHO = 2;
 
 // =======================================================
 // WEBSOCKET
@@ -24,6 +25,8 @@ WebSocketsServer ws(81);
 
 // Busy flag
 bool isBusy = false;
+
+bool isWaitingConnection = true;
 
 // =======================================================
 // ULTRASSÔNICO
@@ -65,7 +68,7 @@ float readUltrasonicCm()
 // =======================================================
 // MOTION
 // =======================================================
-Motion motion;
+Motion motion(true, false);
 
 // =======================================================
 // STATUS
@@ -188,6 +191,7 @@ void onWsEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   case WStype_CONNECTED:
   {
     sendStatus(num);
+    drawConnected();
     break;
   }
 
@@ -223,6 +227,7 @@ void connectWifi()
     delay(300);
     Serial.print(".");
   }
+  ws.connectedClients();
 
   Serial.println();
   Serial.print("Conectado! IP: ");
@@ -248,24 +253,25 @@ void updateSensors()
 void setup()
 {
   Serial.begin(115200);
+  delay(500);
+  initDisplay();
+  delay(100);
+  drawCalibrationScreen();
   motion.begin();
   delay(800);
-
   // Ultrassônico
   pinMode(PIN_US_TRIG, OUTPUT);
   pinMode(PIN_US_ECHO, INPUT);
   digitalWrite(PIN_US_TRIG, LOW);
 
   connectWifi();
-
   motion.stop();
-
+  
   // WebSocket
   ws.begin();
   ws.onEvent(onWsEvent);
+  drawWaitingConnection(WiFi.localIP().toString());
 
-  Serial.println("WebSocket server rodando na porta 81");
-  
 }
 
 // =======================================================
@@ -274,6 +280,14 @@ void setup()
 void loop()
 {
   ws.loop();
+
+  if(ws.connectedClients() == 0) {
+    if(!isWaitingConnection) {
+      motion.stop();
+      drawWaitingConnection(WiFi.localIP().toString());
+    }
+    isWaitingConnection = true;
+  }
 
   updateSensors();
 
